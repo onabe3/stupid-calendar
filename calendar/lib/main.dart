@@ -1,76 +1,91 @@
+import 'dart:collection';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:table_calendar/table_calendar.dart';
 
-// 1. エントリーポイントのmain関数
 void main() {
-  // 2. MyAppを呼び出す
-  runApp(const MyApp());
+  initializeDateFormatting().then((_) => runApp(CalenderPage()));
 }
 
-// MyAppのクラス
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class CalenderPage extends StatefulWidget {
+  const CalenderPage({Key? key}) : super(key: key);
+
+  @override
+  State<CalenderPage> createState() => _CalenderPageState();
+}
+
+class _CalenderPageState extends State<CalenderPage> {
+  DateTime _focusedDay = DateTime.now(); // 現在日
+  CalendarFormat _calendarFormat = CalendarFormat.month; // 月フォーマット
+  DateTime? _selectedDay; // 選択している日付
+  List<String> _selectedEvents = [];
+
+  //Map形式で保持　keyが日付　値が文字列
+  final sampleMap = {
+    DateTime.utc(2023, 2, 20): ['firstEvent', 'secondEvent'],
+    DateTime.utc(2023, 2, 5): ['thirdEvent', 'fourthEvent'],
+  };
+
+  final sampleEvents = {
+    DateTime.utc(2023, 2, 20): ['firstEvent', 'secondEvent'],
+    DateTime.utc(2023, 2, 5): ['thirdEvent', 'fourthEvent']
+  };
 
   @override
   Widget build(BuildContext context) {
-    // 3. タイトルとテーマを設定する。画面の本体はMyHomePageで作る。
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  // 5. カウンタが押された時のメソッド
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-      print("HelloWorld");
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // 4. MyHomePageの画面を構築する部分
-    return Scaffold(
-      // 画面上部のタイトル部分
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // 画面の中央に表示されるテキスト
-            const Text(
-              'You have pushed the button this many times:',
+      home: Scaffold(
+        // カレンダーUI実装
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: TableCalendar(
+                  firstDay: DateTime.utc(2023, 1, 1),
+                  lastDay: DateTime.utc(2024, 12, 31),
+                  focusedDay: _focusedDay,
+                  eventLoader: (date) {
+                    // イベントドット処理
+                    return sampleMap[date] ?? [];
+                  },
+                  calendarFormat: _calendarFormat, // デフォを月表示に設定
+                  onFormatChanged: (format) {
+                    // 「月」「週」変更
+                    if (_calendarFormat != format) {
+                      setState(() {
+                        _calendarFormat = format;
+                      });
+                    }
+                  },
+                  // 選択日のアニメーション
+                  selectedDayPredicate: (day) {
+                    return isSameDay(_selectedDay, day);
+                  },
+                  // 日付が選択されたときの処理
+                  onDaySelected: (selectedDay, focusedDay) {
+                    setState(() {
+                      _selectedDay = selectedDay;
+                      _focusedDay = focusedDay;
+                      _selectedEvents = sampleEvents[selectedDay] ?? [];
+                    });
+                  }),
             ),
-            // テキストの下に表示されるカウンタ値
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            // タップした時表示するリスト
+            Expanded(
+              child: ListView.builder(
+                itemCount: _selectedEvents.length,
+                itemBuilder: (context, index) {
+                  final event = _selectedEvents[index];
+                  return Card(
+                    child: ListTile(
+                      title: Text(event),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
-      ),
-      // 右下の「+」ボタンに対応するフローティングアクションボタン
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
