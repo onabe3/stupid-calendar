@@ -41,6 +41,7 @@ class _CalenderPageState extends State<CalenderPage> {
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: TableCalendar(
+                  locale: 'ja_JA',
                   firstDay: DateTime.utc(2023, 1, 1),
                   lastDay: DateTime.utc(2024, 12, 31),
                   focusedDay: _focusedDay,
