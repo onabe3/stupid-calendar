@@ -1,77 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 
-// 1. エントリーポイントのmain関数
-void main() {
-  // 2. MyAppを呼び出す
-  runApp(const MyApp());
+void main() => runApp(CalendarApp());
+
+class CalendarApp extends StatefulWidget {
+  @override
+  _CalendarAppState createState() => _CalendarAppState();
 }
 
-// MyAppのクラス
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class _CalendarAppState extends State<CalendarApp> {
+  CalendarView _calendarView = CalendarView.month;
 
   @override
   Widget build(BuildContext context) {
-    // 3. タイトルとテーマを設定する。画面の本体はMyHomePageで作る。
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  // 5. カウンタが押された時のメソッド
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-      print("HelloWorld");
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // 4. MyHomePageの画面を構築する部分
-    return Scaffold(
-      // 画面上部のタイトル部分
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Calendar'),
+        ),
+        body: Column(
           children: <Widget>[
-            // 画面の中央に表示されるテキスト
-            const Text(
-              'You have pushed the button this many times:',
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                TextButton(
+                  child: Text('Month'),
+                  onPressed: () {
+                    setState(() {
+                      _calendarView = CalendarView.month;
+                    });
+                  },
+                ),
+                TextButton(
+                  child: Text('Week'),
+                  onPressed: () {
+                    setState(() {
+                      _calendarView = CalendarView.week;
+                    });
+                  },
+                ),
+                TextButton(
+                  child: Text('Day'),
+                  onPressed: () {
+                    setState(() {
+                      _calendarView = CalendarView.day;
+                    });
+                  },
+                ),
+              ],
             ),
-            // テキストの下に表示されるカウンタ値
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            Expanded(
+              child: SfCalendar(
+                key: ValueKey(_calendarView),
+                view: _calendarView,
+                dataSource: _getCalendarDataSource(),
+                onTap: (CalendarTapDetails details) {
+                  print(details.date);
+                },
+              ),
             ),
           ],
         ),
       ),
-      // 右下の「+」ボタンに対応するフローティングアクションボタン
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
+  }
+
+  _DataSource _getCalendarDataSource() {
+    List<Appointment> appointments = <Appointment>[];
+    appointments.add(Appointment(
+      startTime: DateTime.now(),
+      endTime: DateTime.now().add(Duration(hours: 1)),
+      subject: 'Meeting',
+      color: Colors.blue,
+    ));
+    return _DataSource(appointments);
+  }
+}
+
+class _DataSource extends CalendarDataSource {
+  _DataSource(List<Appointment> source) {
+    appointments = source;
   }
 }
