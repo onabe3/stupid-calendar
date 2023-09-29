@@ -35,6 +35,9 @@ class _CalenderPageState extends State<CalenderPage> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        appBar: AppBar(
+          title: Text("バカカレンダー"),
+        ),
         // カレンダーUI実装
         body: Column(
           children: [
